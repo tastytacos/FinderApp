@@ -9,8 +9,9 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
-public class LineSearcher implements Callable<List<String>> {
+public class LineSearcher implements Supplier<List<String>> {
 
     private File file;
     private String keyWord;
@@ -20,7 +21,7 @@ public class LineSearcher implements Callable<List<String>> {
         this.keyWord = keyWord;
     }
 
-    private List<String> findLines(File file, String keyWord) {
+    public List<String> findLines(File file, String keyWord) {
         List<String> strings = new ArrayList<>();
         try {
             RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
@@ -38,8 +39,9 @@ public class LineSearcher implements Callable<List<String>> {
         return strings;
     }
 
+
     @Override
-    public List<String> call() throws Exception {
+    public List<String> get() {
         return findLines(file, keyWord);
     }
 }

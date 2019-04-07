@@ -6,7 +6,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -159,22 +161,12 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
                     findWords();
                     LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
                     try {
-                        FutureTask<List<String>> future = new FutureTask<>(lineSearcher);
-                        new Thread(future).start();
-                        while (!future.isDone()) {
-                            resultTextArea.setText("Your text is checking. Please wait!");
+                        CompletableFuture<List<String>> completableFuture = CompletableFuture.supplyAsync(lineSearcher);
+                        if (!completableFuture.isDone()){
+                            resultTextArea.setText("Your query is handling...");
                         }
-                        List<String> result = future.get();
-                        if (result.size() != 0) {
-                            String resultString = "";
-                            for (String str: result) {
-                                resultString += str;
-                            }
-                            resultTextArea.setText(resultString);
-                        }
-                        else {
-                            resultTextArea.setText("No data found");
-                        }
+                        completableFuture.thenAccept(this::handle);
+
                     } catch (Exception e1) {
                         e1.printStackTrace();
                     }
@@ -194,6 +186,19 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
                 break;
         }
 
+    }
+
+    private void handle(List<String> result) {
+        if (result.size() != 0) {
+            String resultString = "";
+            for (String str: result) {
+                resultString += str;
+            }
+            resultTextArea.setText(resultString);
+        }
+        else {
+            resultTextArea.setText("No data found");
+        }
     }
 
     public void setTime(String time) {
