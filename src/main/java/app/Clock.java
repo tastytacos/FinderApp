@@ -13,18 +13,17 @@ public class Clock extends JLabel implements Runnable {
 
     public void stop() {
         this.running = false;
+        System.out.println("Thread " + Thread.currentThread().getName() + " stopped the time");
     }
 
     Clock(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
     }
 
-    public void start() {
-        this.running = true;
-    }
 
     @Override
     public void run() {
+        System.out.println("Thread " + Thread.currentThread().getName() + " started the time");
         while (running) {
             LocalTime time = new LocalTime();
             mainWindow.setTime(fmt.print(time));

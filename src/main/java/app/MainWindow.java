@@ -1,12 +1,16 @@
 package app;
 
+import javax.sound.sampled.Line;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
-public class MainWindow extends JFrame implements ActionListener {
+public class MainWindow extends JFrame implements ActionListener, Runnable {
     private JButton startTimeButton, stopTimeButton;
     private JLabel timeLabel = new JLabel();
     private Font defaultFont = new Font("Default", Font.BOLD + Font.ITALIC, 18);
@@ -17,14 +21,21 @@ public class MainWindow extends JFrame implements ActionListener {
     private JLabel fileNameLabel;
     private JTextArea keyWordArea = new JTextArea(3, 20);
     private JTextArea resultTextArea = new JTextArea(10, 20);
-
-
-    public static void main(String args[]) {
-        MainWindow main = new MainWindow();
-    }
+    private String keyWord = "";
 
     public MainWindow() {
         initValues();
+    }
+
+    public MainWindow(File file, String keyWord) {
+        this.file = file;
+        this.keyWord = keyWord;
+        initValues();
+        findWords();
+    }
+
+    private void findWords() {
+        System.out.println("Finding words");
     }
 
     private void initValues() {
@@ -60,8 +71,13 @@ public class MainWindow extends JFrame implements ActionListener {
         chooseFileButton.setActionCommand("CHOOSE");
         chooseFileButton.addActionListener(this);
         subMainPanel.add(chooseFileButton);
-
-        fileNameLabel = new JLabel("The name of the file after loading will be shown here");
+        String filename;
+        try {
+            filename = file.getName();
+        } catch (NullPointerException e) {
+            filename = "The name of the file after loading will be shown here";
+        }
+        fileNameLabel = new JLabel(filename);
         fileNameLabel.setFont(defaultFont);
         subMainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         subMainPanel.add(fileNameLabel);
@@ -74,6 +90,7 @@ public class MainWindow extends JFrame implements ActionListener {
         keyWordArea.setLineWrap(true);
         keyWordArea.setFont(defaultFont);
         JScrollPane textScrollPane = new JScrollPane(keyWordArea);
+        keyWordArea.setText(keyWord);
         subMainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         subMainPanel.add(textScrollPane);
 
@@ -103,8 +120,6 @@ public class MainWindow extends JFrame implements ActionListener {
         add(mainPanel, BorderLayout.CENTER);
         clock = new Clock(this);
         new Thread(clock).start();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setVisible(true);
     }
 
     @Override
@@ -141,6 +156,29 @@ public class MainWindow extends JFrame implements ActionListener {
             case "FIND":
                 if (file != null && !keyWordArea.getText().equals("")) {
                     System.out.println("Do smth");
+                    findWords();
+                    LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
+                    try {
+                        FutureTask<List<String>> future = new FutureTask<>(lineSearcher);
+                        new Thread(future).start();
+                        while (!future.isDone()) {
+                            resultTextArea.setText("Your text is checking. Please wait!");
+                        }
+                        List<String> result = future.get();
+                        if (result.size() != 0) {
+                            String resultString = "";
+                            for (String str: result) {
+                                resultString += str;
+                            }
+                            resultTextArea.setText(resultString);
+                        }
+                        else {
+                            resultTextArea.setText("No data found");
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+
                 } else {
                     JOptionPane.showMessageDialog(this, "You didn't set file or key word");
                 }
@@ -148,6 +186,8 @@ public class MainWindow extends JFrame implements ActionListener {
             case "NEW_TAB":
                 if (file != null && !keyWordArea.getText().equals("")) {
                     System.out.println("Do smth in new tab");
+                    findWords();
+                    new Thread(new MainWindow(file, keyWordArea.getText())).start();
                 } else {
                     JOptionPane.showMessageDialog(this, "You didn't set file or key word");
                 }
@@ -158,6 +198,16 @@ public class MainWindow extends JFrame implements ActionListener {
 
     public void setTime(String time) {
         timeLabel.setText(time);
+    }
+
+    @Override
+    public void run() {
+        System.out.println("App in " + Thread.currentThread().getName() + " is showing window");
+        SwingUtilities.invokeLater(() -> {
+            System.out.println("App in " + Thread.currentThread().getName() + " is showing window");
+            setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            setVisible(true);
+        });
     }
 }
 
