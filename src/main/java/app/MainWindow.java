@@ -33,9 +33,6 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
         findWords();
     }
 
-    private void findWords() {
-        System.out.println("Finding words");
-    }
 
     private void initValues() {
         setSize(800, 800);
@@ -164,7 +161,6 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
     private void find() {
         if (file != null && !keyWordArea.getText().equals("")) {
             System.out.println("Do smth");
-            findWords();
             LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
             try {
                 CompletableFuture<List<String>> completableFuture = CompletableFuture.supplyAsync(lineSearcher);
