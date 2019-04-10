@@ -1,16 +1,13 @@
 package app;
 
-import javax.sound.sampled.Line;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 public class MainWindow extends JFrame implements ActionListener, Runnable {
     private JButton startTimeButton, stopTimeButton;
@@ -162,7 +159,7 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
                     LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
                     try {
                         CompletableFuture<List<String>> completableFuture = CompletableFuture.supplyAsync(lineSearcher);
-                        if (!completableFuture.isDone()){
+                        if (!completableFuture.isDone()) {
                             resultTextArea.setText("Your query is handling...");
                         }
                         completableFuture.thenAccept(this::handle);
@@ -176,29 +173,22 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
                 }
                 break;
             case "NEW_TAB":
-                if (file != null && !keyWordArea.getText().equals("")) {
-                    System.out.println("Do smth in new tab");
-                    findWords();
-                    new Thread(new MainWindow(file, keyWordArea.getText())).start();
-                } else {
-                    JOptionPane.showMessageDialog(this, "You didn't set file or key word");
-                }
+                new Thread(new MainWindow(file, keyWordArea.getText())).start();
                 break;
         }
-
     }
 
     private void handle(List<String> result) {
         if (result.size() != 0) {
             String resultString = "";
-            for (String str: result) {
+            for (String str : result) {
                 resultString += str;
             }
             resultTextArea.setText(resultString);
-        }
-        else {
+        } else {
             resultTextArea.setText("No data found");
         }
+        System.out.println("Finished handling!");
     }
 
     public void setTime(String time) {
@@ -215,7 +205,3 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
         });
     }
 }
-
-
-           
-         
