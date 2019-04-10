@@ -30,7 +30,6 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
         this.file = file;
         this.keyWord = keyWord;
         initValues();
-        findWords();
     }
 
 
