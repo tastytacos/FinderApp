@@ -153,28 +153,32 @@ public class MainWindow extends JFrame implements ActionListener, Runnable {
                 }
                 break;
             case "FIND":
-                if (file != null && !keyWordArea.getText().equals("")) {
-                    System.out.println("Do smth");
-                    findWords();
-                    LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
-                    try {
-                        CompletableFuture<List<String>> completableFuture = CompletableFuture.supplyAsync(lineSearcher);
-                        if (!completableFuture.isDone()) {
-                            resultTextArea.setText("Your query is handling...");
-                        }
-                        completableFuture.thenAccept(this::handle);
-
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-
-                } else {
-                    JOptionPane.showMessageDialog(this, "You didn't set file or key word");
-                }
+                find();
                 break;
             case "NEW_TAB":
                 new Thread(new MainWindow(file, keyWordArea.getText())).start();
                 break;
+        }
+    }
+
+    private void find() {
+        if (file != null && !keyWordArea.getText().equals("")) {
+            System.out.println("Do smth");
+            findWords();
+            LineSearcher lineSearcher = new LineSearcher(file, keyWordArea.getText());
+            try {
+                CompletableFuture<List<String>> completableFuture = CompletableFuture.supplyAsync(lineSearcher);
+                if (!completableFuture.isDone()) {
+                    resultTextArea.setText("Your query is handling...");
+                }
+                completableFuture.thenAccept(this::handle);
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+
+        } else {
+            JOptionPane.showMessageDialog(this, "You didn't set file or key word");
         }
     }
 
